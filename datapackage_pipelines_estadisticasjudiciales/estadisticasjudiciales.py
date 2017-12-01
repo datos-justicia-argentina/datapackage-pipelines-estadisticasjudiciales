@@ -14,23 +14,40 @@ class Generator(GeneratorBase):
     def generate_pipeline(cls, source):
         pipeline_id = dataset_name = "estadisticasjudiciales"
 
-        pipeline_steps = steps(*[
-            ("add_metadata", {
-                "name": "testmetadata"
-                }
-            ),
-            ("add_resource",
+        # //find files
+        files = [
+            {
+            "table": "table",
+            "filename":"/mnt/datackan/provincias/ARG-14-CSJ/ARG-14-CSJ-listado5.csv"
+            }
+        ]
+        resources = ()
+        for f in files:
+            resources += ("add_resource",
                 {
-                    "name": "testresource",
-                    "url": "/mnt/datackan/provincias/ARG-14-CSJ/ARG-14-CSJ-listado5.csv",
+                    "name": f["table"],
+                    "url": f["filename"],
                     "format": "csv",
                     "headers": 1
                 }
+            )
+
+        pipeline_steps = steps(*[
+            ("add_metadata", {
+                "processed_by": "datapackage_pipelines_estadisticasjudiciales"
+                }
             ),
+            resources,
             ("stream_remote_resources", {}),
+            # dump to mysql
+            # run tests
+
             ("dump.to_path", {
                 "out-path": "testpath"
             }),
+            # ("dump.to_mysql", {
+            #     "out-path": "testpath"
+            # }),
 
 
         ])
