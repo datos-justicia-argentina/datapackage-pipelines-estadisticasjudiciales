@@ -1,5 +1,6 @@
 import os
 import json
+import logging
 
 from datapackage_pipelines.generators import GeneratorBase, slugify, steps, SCHEDULE_MONTHLY
 
@@ -14,13 +15,8 @@ class Generator(GeneratorBase):
     def generate_pipeline(cls, source):
         pipeline_id = dataset_name = "estadisticasjudiciales"
 
-        # //find files
-        files = [
-            {
-            "table": "table",
-            "filename":"/mnt/datackan/provincias/ARG-14-CSJ/ARG-14-CSJ-listado5.csv"
-            }
-        ]
+        # //find CSV files
+        files = get_files("/mnt/datackan/provincias/","csv")
         resources = ()
         for f in files:
             resources += ("add_resource",
@@ -56,6 +52,7 @@ class Generator(GeneratorBase):
             "pipeline": pipeline_steps,
             "schedule": {"crontab" : SCHEDULE_MONTHLY}
         }
+        logging.info(pipeline_details)
         yield pipeline_id,pipeline_details
 
 
@@ -79,3 +76,24 @@ class Generator(GeneratorBase):
    #         type: string
    #       "tabla5.partes":
    #         type: string
+
+
+
+
+# Inspirado en http://www.bogotobogo.com/python/python_traversing_directory_tree_recursively_os_walk.php
+def get_files(base,ext=False):
+    topdir = base
+    files_array = []
+    if ext:
+        ext = ext.lower()
+    for dirpath, dirnames, files in os.walk(topdir):
+        for name in files:
+            # print (name,dirpath)
+            if not ext or ext and name.lower().endswith(ext):
+                files_array.append({
+                    "table": "table", #TODO: detectar aca el numero de tabla
+                    "filename":os.path.join(dirpath, name)
+                })
+            else:
+                print(dirpath,name);
+    return files_array
