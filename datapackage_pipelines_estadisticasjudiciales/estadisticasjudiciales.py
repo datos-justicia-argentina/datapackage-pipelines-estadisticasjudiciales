@@ -15,9 +15,10 @@ class Generator(GeneratorBase):
     def generate_pipeline(cls, source):
         pipeline_id = dataset_name = "estadisticasjudiciales"
 
+        resources = []
+
         # //find CSV files
         files = get_files("/mnt/datackan/provincias/","csv")
-        resources = ()
         for f in files:
             resources += ("add_resource",
                 {
@@ -25,7 +26,8 @@ class Generator(GeneratorBase):
                     "url": f["filename"],
                     "format": "csv",
                     "headers": 1
-                }
+                },
+                (True)
             )
 
         pipeline_steps = steps(*[
@@ -52,7 +54,8 @@ class Generator(GeneratorBase):
             "pipeline": pipeline_steps,
             "schedule": {"crontab" : SCHEDULE_MONTHLY}
         }
-        logging.info(pipeline_details)
+        logging.info("pipeline_steps")
+        logging.info(pipeline_steps)
         yield pipeline_id,pipeline_details
 
 
@@ -90,10 +93,10 @@ def get_files(base,ext=False):
         for name in files:
             # print (name,dirpath)
             if not ext or ext and name.lower().endswith(ext):
+                print(dirpath,name);
                 files_array.append({
                     "table": "table", #TODO: detectar aca el numero de tabla
                     "filename":os.path.join(dirpath, name)
                 })
-            else:
-                print(dirpath,name);
+            # else:
     return files_array
