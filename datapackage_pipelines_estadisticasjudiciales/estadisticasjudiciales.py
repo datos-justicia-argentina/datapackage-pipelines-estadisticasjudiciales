@@ -20,23 +20,50 @@ class Generator(GeneratorBase):
         # //find CSV files
         files = get_files("/mnt/datackan/provincias/","csv")
         for f in files:
-            resources += ("add_resource",
-                {
-                    "name": f["table"],
-                    "url": f["filename"],
-                    "format": "csv",
-                    "headers": 1
-                },
-                (True)
-            )
+            obj = {
+                "name": f["table"],
+                "url": f["filename"],
+                "format": "csv",
+                "headers": 1
+            }
+            #
+            # logging.info("len(resources)")
+            # logging.info(len(resources))
+
+            if len(resources) < 1:
+                objlist = obj,True
+            else:
+                objlist = [obj]
+
+            r = ["add_resource"]
+            r += objlist
+            resources += [r]
+
+
+        logging.info("resources")
+        logging.info(tuple(resources))
 
         pipeline_steps = steps(*[
             ("add_metadata", {
                 "processed_by": "datapackage_pipelines_estadisticasjudiciales"
                 }
             ),
-            resources,
-            ("stream_remote_resources", {}),
+
+            tuple(resources),
+            #
+            # ['add_resource',{'name': 'table', 'url': '/mnt/datackan/provincias/ARG-03-MPF/Dependencias.csv', 'format': 'csv', 'headers': 1}, True],
+            # ['add_resource', {'name': 'table', 'url': '/mnt/datackan/provincias/ARG-03-MPF/Listado1(2016).csv', 'format': 'csv', 'headers': 1}],
+            # ['add_resource', {'name': 'table', 'url': '/mnt/datackan/provincias/ARG-03-MPF/Listado1.csv', 'format': 'csv', 'headers': 1}],
+            # ['add_resource', {'name': 'table', 'url': '/mnt/datackan/provincias/ARG-03-MPF/Listado2(2016).csv', 'format': 'csv', 'headers': 1}],
+            # ['add_resource', {'name': 'table', 'url': '/mnt/datackan/provincias/ARG-03-MPF/Listado2.csv', 'format': 'csv', 'headers': 1}],
+            # ['add_resource', {'name': 'table', 'url': '/mnt/datackan/provincias/ARG-03-MPF/TiposRoles.csv', 'format': 'csv', 'headers': 1}],
+            # ['add_resource', {'name': 'table', 'url': '/mnt/datackan/provincias/ARG-09-MPF/prueba unificacion/ARG-09-MPF-listado1.csv', 'format': 'csv', 'headers': 1}],
+            # ['add_resource', {'name': 'table', 'url': '/mnt/datackan/provincias/ARG-09-MPF/prueba unificacion/ARG-09-MPF-Listado1_1.csv', 'format': 'csv', 'headers': 1}],
+            # ['add_resource', {'name': 'table', 'url': '/mnt/datackan/provincias/ARG-09-MPF/prueba unificacion/ARG-09-MPF-Listado1_2.csv', 'format': 'csv', 'headers': 1}],
+            # ['add_resource', {'name': 'table', 'url': '/mnt/datackan/provincias/ARG-09-MPF/prueba unificacion/ARG-09-MPF-listado1_p1.csv', 'format': 'csv', 'headers': 1}],
+            # ['add_resource', {'name': 'table', 'url': '/mnt/datackan/provincias/ARG-09-MPF/prueba unificacion/ARG-09-MPF-listado1_p2.csv', 'format': 'csv', 'headers': 1}]
+            # ,
+            ("stream_remote_resources", {"cache": True}),
             # dump to mysql
             # run tests
 
@@ -93,7 +120,7 @@ def get_files(base,ext=False):
         for name in files:
             # print (name,dirpath)
             if not ext or ext and name.lower().endswith(ext):
-                print(dirpath,name);
+                # print(dirpath,name);
                 files_array.append({
                     "table": "table", #TODO: detectar aca el numero de tabla
                     "filename":os.path.join(dirpath, name)
